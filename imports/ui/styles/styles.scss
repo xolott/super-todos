@@ -1,0 +1,20 @@
+html {
+  box-sizing: border-box;
+}
+
+html * {
+  box-sizing: inherit;
+}
+
+body {
+  font-size: 16px;
+  font-family: sans-serif;
+}
+.v-application--wrap {
+  background-color: #eeeeee;
+}
+
+p {
+  margin: 0;
+}
+@import "./font";
