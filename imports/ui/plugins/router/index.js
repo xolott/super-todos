@@ -1,5 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+import store from "../store";
 import routes from "./routes";
 
 Vue.use(VueRouter);
@@ -23,6 +24,11 @@ router.beforeEach((to, from, next) => {
   } else {
     next();
   }
+});
+router.afterEach((to, from) => {
+  store.dispatch("setOrganizationId", to.params.orgId);
+  store.dispatch("setProjectId", to.params.projectId);
+  store.dispatch("setTaskId", to.params.taskId);
 });
 
 export default router;

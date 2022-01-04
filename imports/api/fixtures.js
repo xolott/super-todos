@@ -1,32 +1,48 @@
-import { Meteor } from 'meteor/meteor';
-import Links from './collections/Links.js';
+import { Meteor } from "meteor/meteor";
+import Roles from "./collections/Roles";
 
 Meteor.startup(() => {
-  // if the Links collection is empty
-  if (Links.find().count() === 0) {
+  if (Roles.find().count() === 0) {
+    /*
+ownner, manager, coordinator
+owner can add/remove users
+manager can create tasks
+coordinator can comment
+owner can also create task + comment on tasks
+managers can also comment on tasks
+but coordinator can only comment
+*/
+    Roles.remove({});
     const data = [
       {
-        title: 'Do the Tutorial',
-        url: 'https://www.meteor.com/try',
-        createdAt: new Date(),
+        name: "owner",
+        policies: [
+          "organization.update",
+          "organization.delete",
+          "project.create",
+          "project.update",
+          "project.delete",
+          "task.create",
+          "task.update",
+          "task.delete",
+          "comment.create",
+        ],
       },
       {
-        title: 'Follow the Guide',
-        url: 'http://guide.meteor.com',
-        createdAt: new Date(),
+        name: "manager",
+        policies: [
+          "task.create",
+          "task.update",
+          "task.delete",
+          "comment.create",
+        ],
       },
       {
-        title: 'Read the Docs',
-        url: 'https://docs.meteor.com',
-        createdAt: new Date(),
-      },
-      {
-        title: 'Discussions',
-        url: 'https://forums.meteor.com',
-        createdAt: new Date(),
+        name: "coordinator",
+        policies: ["comment.create"],
       },
     ];
 
-    data.forEach(link => Links.insert(link));
+    data.forEach((role) => Roles.insert(role));
   }
 });

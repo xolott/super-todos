@@ -62,7 +62,7 @@ export default {
               });
               this.isLoading = false;
             } else {
-              this.$router.push({ name: "auth.login" });
+              this.$router.push({ name: "home" });
             }
           }
         );

@@ -7,7 +7,9 @@ Simple meteor app to manage Todos lists with user signup and comments supports.
 Run this command in your terminal:
 
 ```console
-meteor run
+$ npm i
+$ meteor npm install
+$ meteor run
 
 => Started proxy.
 => [HMR] Dev server listening on port 3003.

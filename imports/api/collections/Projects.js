@@ -1,3 +1,7 @@
 import { Mongo } from "meteor/mongo";
 
-export default new Mongo.Collection("projects");
+const Projects = new Mongo.Collection("projects");
+if (Meteor.isServer) {
+  Projects.createIndex({ name: 1 }, { name: "unique_name", unique: true });
+}
+export default Projects;

@@ -1,80 +1,61 @@
 <template>
-  <div>
-    <v-data-table
-      :headers="headers"
-      :items="organizations"
-      @click:row="onRowClick"
-    >
-      <template v-slot:top>
-        <v-toolbar flat>
-          <v-toolbar-title>
-            {{ organizations.length }} Organizations
-          </v-toolbar-title>
-          <v-spacer />
-          <OragnizationDialog
-            :edit="edit"
-            v-model="dialog"
-            v-bind:data="editedItem"
-            @onClose="clear"
-          />
-          <OragnizationDeleteDialog
-            v-model="dialogDelete"
-            v-bind:data="editedItem"
-          />
-        </v-toolbar>
-      </template>
-      <template v-slot:item.actions="{ item }">
-        <v-icon
-          :disabled="!allowed(item)"
-          small
-          class="mr-2"
-          @click="onEditItem(item)"
-          color="success"
-        >
-          mdi-pencil
-        </v-icon>
-        <v-icon
-          :disabled="!allowed(item)"
-          small
-          @click="onDeleteItem(item)"
-          color="error"
-        >
-          mdi-delete
-        </v-icon>
-      </template>
-      <template v-slot:no-data>
-        <div class="no-data">
-          <h2>Oh no! You are a member of 0 organizations.</h2>
-          <h2>What are you waiting? Create one!</h2>
-        </div>
-      </template>
-    </v-data-table>
-  </div>
+  <v-data-table :headers="headers" :items="items" @click:row="onRowClick">
+    <template v-slot:top>
+      <v-toolbar flat>
+        <v-toolbar-title> {{ items.length }} Organizations </v-toolbar-title>
+        <v-spacer />
+        <OragnizationDialog
+          :edit="edit"
+          v-model="dialog"
+          v-bind:data="editedItem"
+          @onClose="clear"
+        />
+        <ConfirmationDialog ref="deleteDialog" />
+      </v-toolbar>
+    </template>
+    <template v-slot:item.actions="{ item }">
+      <v-icon
+        :disabled="!allowed(item)"
+        small
+        class="mr-2"
+        @click.stop="onEditItem(item)"
+        color="success"
+      >
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        :disabled="!allowed(item)"
+        small
+        @click.stop="onDeleteItem(item)"
+        color="error"
+      >
+        mdi-delete
+      </v-icon>
+    </template>
+    <template v-slot:no-data>
+      <div class="no-data">
+        <h2>Oh no! You are a member of 0 organizations.</h2>
+        <h2>What are you waiting? Create one!</h2>
+      </div>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
-import Organizations from "../../api/collections/Organizations";
 import OragnizationDialog from "./OragnizationDialog.vue";
-import OragnizationDeleteDialog from "./OragnizationDeleteDialog.vue";
+import ConfirmationDialog from "./dialogs/ConfirmationDialog.vue";
 
 export default {
-  name: "organizations",
-  components: { OragnizationDialog, OragnizationDeleteDialog },
-  meteor: {
-    $subscribe: {
-      organizations: [],
-    },
-    organizations() {
-      return Organizations.find({}).map((x) => ({
-        ...x,
-        memberQty: x.members.length + 1,
-        projectQty: x.projects.length,
-      }));
-    },
+  name: "organizations-table",
+  components: {
+    OragnizationDialog,
+    ConfirmationDialog,
+  },
+  props: {
+    items: { type: Array, required: true },
   },
   data: () => ({
     dialog: false,
-    dialogDelete: false,
     editedItem: {},
     edit: false,
 
@@ -111,18 +92,30 @@ export default {
       this.edit = true;
       this.dialog = true;
     },
-    onDeleteItem(item) {
-      this.editedItem = { ...item };
-      this.edit = false;
-      this.dialogDelete = true;
+    async onDeleteItem(item) {
+      if (await this.$refs.deleteDialog.open("Delete Organization")) {
+        Meteor.call("organization.delete", item._id, (error) => {
+          if (error) {
+            this.$eventBus.$emit("alert", {
+              type: "error",
+              message: error.reason,
+            });
+          } else {
+            this.$eventBus.$emit("alert", {
+              type: "success",
+              message: "Deleted",
+            });
+            this.clear();
+          }
+        });
+      }
     },
     clear() {
       this.editedItem = {};
       this.edit = false;
     },
     onRowClick(item) {
-      console.log({ item });
-      this.$router.push({ path: `/organizations/${item._id}/projects` });
+      this.$router.push({ path: `/organizations/${item._id}/` });
     },
   },
 };

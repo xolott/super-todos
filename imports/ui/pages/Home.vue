@@ -6,7 +6,7 @@
 export default {
   name: "home",
   mounted() {
-    this.$router.replace({ name: "organizations" });
+    this.$router.replace({ name: "organizations.home" });
   },
 };
 </script>
